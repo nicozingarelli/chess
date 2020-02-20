@@ -1,10 +1,12 @@
 import collections
-from pieces import Pawn
-from pieces import Knight
-from pieces import Bishop
-from pieces import Rook
-from pieces import Queen
-from pieces import King
+import Pieces
+import time
+from Pieces import Pawn
+from Pieces import Knight
+from Pieces import Bishop
+from Pieces import Rook
+from Pieces import Queen
+from Pieces import King
 
 B = -1
 W = +1
@@ -16,9 +18,77 @@ class Board(object):
         self.white_pieces = self.pieces[0]
         self.black_pieces = self.pieces[1]
 
+    def minimax(self, board, depth, player):
+        # time.sleep( 3 )
+        # print('depth: ', depth)
+        # print("player: ", player)
+        # for row in board:
+        #     print(row)
+
+        pieces = []
+        # decide whether objective is high score or low score
+        if player == Pieces.color.WHITE:
+            best = [None, -99999]
+            pieces = self.generateTestPieces(board)[0]
+        else:
+            best = [None, 99999]
+            pieces = self.generateTestPieces(board)[1]
+
+        # see if no more moves to analyze
+        if depth == 0:
+            test_pieces = self.generateTestPieces(board)
+            score = self.scoreTestBoard(test_pieces)
+            return [None, score]
+
+        # explore all possible moves from here
+        # print('num pieces: ', len(pieces))
+        for piece in pieces:
+            potential_moves = piece.findMoves(board)
+            # print('num moves for piece: ', len(potential_moves))
+            for move in potential_moves:
+                # save state
+                piece = move[0]
+                i = piece.i
+                j = piece.j
+                test_i = move[1]
+                test_j = move[2]
+                piece_char = board[i][j]
+                temp_char = board[test_i][test_j]
+                # make changes to state
+                board[i][j] = '_'
+                board[test_i][test_j] = piece_char
+                        # test_pieces = self.generateTestPieces(board)
+                # score this new state
+                score = self.minimax(board, depth - 1, Pieces.color(int(-player)))
+                # undo state changes
+                board[i][j] = piece_char
+                board[test_i][test_j] = temp_char
+                # give ourselves a way to seee which move got us this score
+                score[0] = move
+
+                # see if currently explored move is the best
+                if player == Pieces.color.WHITE:
+                    # print('whites move')
+                    # print('score[1]', score[1])
+                    # print('best[1]', best[1])
+                    if score[1] > best[1]:
+                        # new best (highest) score found
+                        best = score
+                else:
+                    # print('blacks move')
+                    # print('score[1]', score[1])
+                    # print('best[1]', best[1])
+                    if score[1] < best[1]:
+                        # new best (lowest) score found
+                        best = score
+
+        # print('beeeeeeeest', best)
+        for row in board:
+            print(row)
+        return best
 
     def pickBestMove(self, side):
-        if(side == 'w'):
+        if(side == Pieces.color.WHITE):
             move_dict = { }
             for piece in self.white_pieces:
                 potential_moves = piece.findMoves(self.board)
@@ -27,7 +97,7 @@ class Board(object):
                     move_dict[score] = move
             od = collections.OrderedDict(sorted(move_dict.items(), reverse=True))
             return next(iter(od.items()))[1]
-        if(side == 'b'):
+        if(side == Pieces.color.BLACK):
             move_dict = { }
             for piece in self.black_pieces:
                 potential_moves = piece.findMoves(self.board)
@@ -46,11 +116,8 @@ class Board(object):
         test_j = move[2]
         piece_char = self.board[i][j]
         temp_char = self.board[test_i][test_j]
-        # piece.i = test_i
-        # piece.j = test_j
         self.board[i][j] = '_'
         self.board[test_i][test_j] = piece_char
-        # self.updateBoard()
         test_pieces = self.generatePieces()
         self.board[i][j] = piece_char
         self.board[test_i][test_j] = temp_char
@@ -59,7 +126,7 @@ class Board(object):
 
     def getAllMoves(self, side):
         moves = []
-        if(side == 'w'):
+        if(side == Pieces.color.WHITE):
             for piece in self.white_pieces:
                 moves.extend(piece.findMoves(self.board))
         else:
@@ -98,39 +165,58 @@ class Board(object):
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 if(self.board[i][j] == 'P'):
-                    new_pawn = Pawn('w', i, j)
-                    white_pieces.append(new_pawn)
+                    white_pieces.append(Pawn(Pieces.color.WHITE, i, j))
                 if(self.board[i][j] == 'p'):
-                    new_pawn = Pawn('b', i, j)
-                    black_pieces.append(new_pawn)
+                    black_pieces.append(Pawn(Pieces.color.BLACK, i, j))
                 if(self.board[i][j] == 'N'):
-                    new_knight = Knight('w', i, j)
-                    white_pieces.append(new_knight)
+                    white_pieces.append(Knight(Pieces.color.WHITE, i, j))
                 if(self.board[i][j] == 'n'):
-                    new_knight = Knight('b', i, j)
-                    black_pieces.append(new_knight)
+                    black_pieces.append(Knight(Pieces.color.BLACK, i, j))
                 if(self.board[i][j] == 'B'):
-                    new_bishop = Bishop('w', i, j)
-                    white_pieces.append(new_bishop)
+                    white_pieces.append(Bishop(Pieces.color.WHITE, i, j))
                 if(self.board[i][j] == 'b'):
-                    new_bishop = Bishop('b', i, j)
-                    black_pieces.append(new_bishop)
+                    black_pieces.append(Bishop(Pieces.color.BLACK, i, j))
                 if(self.board[i][j] == 'R'):
-                    new_rook = Rook('w', i, j)
-                    white_pieces.append(new_rook)
+                    white_pieces.append(Rook(Pieces.color.WHITE, i, j))
                 if(self.board[i][j] == 'r'):
-                    new_rook = Rook('b', i, j)
-                    black_pieces.append(new_rook)
+                    black_pieces.append(Rook(Pieces.color.BLACK, i, j))
                 if(self.board[i][j] == 'Q'):
-                    new_queen = Queen('w', i, j)
-                    white_pieces.append(new_queen)
+                    white_pieces.append(Queen(Pieces.color.WHITE, i, j))
                 if(self.board[i][j] == 'q'):
-                    new_queen = Queen('b', i, j)
-                    black_pieces.append(new_queen)
+                    black_pieces.append(Queen(Pieces.color.BLACK, i, j))
                 if(self.board[i][j] == 'K'):
-                    new_king = King('w', i, j)
-                    white_pieces.append(new_king)
+                    white_pieces.append(King(Pieces.color.WHITE, i, j))
                 if(self.board[i][j] == 'k'):
-                    new_king = King('b', i, j)
-                    black_pieces.append(new_king)
+                    black_pieces.append(King(Pieces.color.BLACK, i, j))
+        return[white_pieces, black_pieces]
+
+    def generateTestPieces(self, board):
+        white_pieces = []
+        black_pieces = []
+        for i in range(len(board)):
+            for j in range(len(board[i])):
+                if(board[i][j] == 'P'):
+                    white_pieces.append(Pawn(Pieces.color.WHITE, i, j))
+                if(board[i][j] == 'p'):
+                    black_pieces.append(Pawn(Pieces.color.BLACK, i, j))
+                if(board[i][j] == 'N'):
+                    white_pieces.append(Knight(Pieces.color.WHITE, i, j))
+                if(board[i][j] == 'n'):
+                    black_pieces.append(Knight(Pieces.color.BLACK, i, j))
+                if(board[i][j] == 'B'):
+                    white_pieces.append(Bishop(Pieces.color.WHITE, i, j))
+                if(board[i][j] == 'b'):
+                    black_pieces.append(Bishop(Pieces.color.BLACK, i, j))
+                if(board[i][j] == 'R'):
+                    white_pieces.append(Rook(Pieces.color.WHITE, i, j))
+                if(board[i][j] == 'r'):
+                    black_pieces.append(Rook(Pieces.color.BLACK, i, j))
+                if(board[i][j] == 'Q'):
+                    white_pieces.append(Queen(Pieces.color.WHITE, i, j))
+                if(board[i][j] == 'q'):
+                    black_pieces.append(Queen(Pieces.color.BLACK, i, j))
+                if(board[i][j] == 'K'):
+                    white_pieces.append(King(Pieces.color.WHITE, i, j))
+                if(board[i][j] == 'k'):
+                    black_pieces.append(King(Pieces.color.BLACK, i, j))
         return[white_pieces, black_pieces]

@@ -1,3 +1,9 @@
+from enum import IntEnum
+
+class color(IntEnum):
+    WHITE = 1
+    BLACK = -1
+
 class Piece(object):
     # board[i][j]
     def __init__(self, side, i, j):
@@ -28,7 +34,7 @@ class Piece(object):
             return True
 
     def sideMultiplier(self):
-        if(self.side == 'w'):
+        if(self.side == color.WHITE):
             return 1
         else:
             return -1
@@ -41,7 +47,7 @@ class Pawn(Piece):
 
     def findMoves(self, board):
         moves = []
-        if(self.side == 'w'):
+        if(self.side == color.WHITE):
             if(self.i - 1 >= 0) and (board[self.i - 1][self.j] == '_'):
                 moves.append([self, self.i - 1, self.j])
             if(self.i - 1 >= 0) and (self.j - 1 >= 0) and (board[self.i - 1][self.j - 1] != '_'):
