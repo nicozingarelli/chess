@@ -17,10 +17,18 @@ def main():
              ['_', '_', '_', '_', 'R', '_', 'K', '_']]
 
     board = Board(input)
-    print(len(board.getAllMoves('b')))
+    # print(len(board.getAllMoves('b')))
     board.updateBoard()
+    for row in board.board:
+        print(row)
+    #
+    # print(board.scoreBoard())
+    # print(board.testMove([board.white_pieces[1], 0, 6]))
+    # for row in board.board:
+    #     print(row)
     # print(board.scoreBoard())
     # game = Game(board)
+    print(board.pickBestMove('w'))
 
 class Game(object):
     def __init__(self, board):

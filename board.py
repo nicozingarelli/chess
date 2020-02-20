@@ -1,9 +1,13 @@
+import collections
 from pieces import Pawn
 from pieces import Knight
 from pieces import Bishop
 from pieces import Rook
 from pieces import Queen
 from pieces import King
+
+B = -1
+W = +1
 
 class Board(object):
     def __init__(self, board):
@@ -13,15 +17,44 @@ class Board(object):
         self.black_pieces = self.pieces[1]
 
 
+    def pickBestMove(self, side):
+        if(side == 'w'):
+            move_dict = { }
+            for piece in self.white_pieces:
+                potential_moves = piece.findMoves(self.board)
+                for move in potential_moves:
+                    score = self.testMove(move)
+                    move_dict[score] = move
+            od = collections.OrderedDict(sorted(move_dict.items(), reverse=True))
+            return next(iter(od.items()))[1]
+        if(side == 'b'):
+            move_dict = { }
+            for piece in self.black_pieces:
+                potential_moves = piece.findMoves(self.board)
+                for move in potential_moves:
+                    score = self.testMove(move)
+                    move_dict[score] = move
+            od = collections.OrderedDict(sorted(move_dict.items()))
+            return next(iter(od.items()))[1]
+
+
     def testMove(self, move):
         piece = move[0]
         i = piece.i
         j = piece.j
         test_i = move[1]
         test_j = move[2]
-
-        piece.i = test_i
-        piece.j = test_j
+        piece_char = self.board[i][j]
+        temp_char = self.board[test_i][test_j]
+        # piece.i = test_i
+        # piece.j = test_j
+        self.board[i][j] = '_'
+        self.board[test_i][test_j] = piece_char
+        # self.updateBoard()
+        test_pieces = self.generatePieces()
+        self.board[i][j] = piece_char
+        self.board[test_i][test_j] = temp_char
+        return self.scoreTestBoard(test_pieces)
 
 
     def getAllMoves(self, side):
@@ -39,6 +72,14 @@ class Board(object):
         for piece in self.white_pieces:
             score += piece.r_val
         for piece in self.black_pieces:
+            score -= piece.r_val
+        return score
+
+    def scoreTestBoard(self, pieces):
+        score = 0
+        for piece in pieces[0]:
+            score += piece.r_val
+        for piece in pieces[1]:
             score -= piece.r_val
         return score
 
