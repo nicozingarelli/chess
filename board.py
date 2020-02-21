@@ -8,23 +8,52 @@ from Pieces import Rook
 from Pieces import Queen
 from Pieces import King
 
-B = -1
-W = +1
-
 class Board(object):
     def __init__(self, board):
         self.board = board
         self.pieces = self.generatePieces()
         self.white_pieces = self.pieces[0]
         self.black_pieces = self.pieces[1]
+        self.check_spots = []
+        self.getAllMoves(Pieces.color.WHITE)
+
+    def isCheck(self, side):
+        pieces = []
+        king = self.getKing(side)
+        king_coords = [king.i, king.j]
+        if king_coords in self.check_spots:
+            return True
+        else:
+            return False
+
+    def getKing(self, side):
+        pieces = []
+        if(side == Pieces.color.WHITE):
+            pieces = self.white_pieces
+        else:
+            pieces = self.black_pieces
+        for piece in pieces:
+            if isinstance(piece, Pieces.King):
+                return piece
+
+    def makeMove(self, move):
+        piece = move[0]
+        new_i = move[1]
+        new_j = move[2]
+        i = piece.i
+        j = piece.j
+        self.board[i][j] = '_'
+        if(piece.side == Pieces.color.WHITE):
+            self.board[new_i][new_j] = piece.letter.upper()
+        else:
+            self.board[new_i][new_j] = piece.letter
+        self.pieces = self.generatePieces()
+        self.white_pieces = self.pieces[0]
+        self.black_pieces = self.pieces[1]
+        self.getAllMoves(piece.side)
+
 
     def minimax(self, board, depth, player):
-        # time.sleep( 3 )
-        # print('depth: ', depth)
-        # print("player: ", player)
-        # for row in board:
-        #     print(row)
-
         pieces = []
         # decide whether objective is high score or low score
         if player == Pieces.color.WHITE:
@@ -81,10 +110,6 @@ class Board(object):
                     if score[1] < best[1]:
                         # new best (lowest) score found
                         best = score
-
-        # print('beeeeeeeest', best)
-        for row in board:
-            print(row)
         return best
 
     def pickBestMove(self, side):
@@ -126,12 +151,21 @@ class Board(object):
 
     def getAllMoves(self, side):
         moves = []
+        self.check_spots = []
         if(side == Pieces.color.WHITE):
             for piece in self.white_pieces:
+                print(piece)
                 moves.extend(piece.findMoves(self.board))
+            for move in moves:
+                self.check_spots.append([move[1], move[2]])
         else:
             for piece in self.black_pieces:
                 moves.extend(piece.findMoves(self.board))
+            for move in moves:
+                self.check_spots.append([move[1], move[2]])
+
+        # for move in moves:
+        #     self.check_spots.append([move[1], move[2]])
         return moves
 
     def scoreBoard(self):
